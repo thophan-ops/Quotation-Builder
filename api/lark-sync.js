@@ -47,36 +47,58 @@ export default async function handler(req, res) {
       fieldMap[f.field_name.trim().toLowerCase()] = f.field_id;
     }
 
-    // Bước 3: Tìm record ID của project trong bảng Master Project
+    // Bước 3: Tìm Master Project record ID (độc lập, không ảnh hưởng sync chính)
     let masterProjectRecordId = null;
-    if (projectName && masterProjectTableId) {
-      const searchRes = await fetch(
-        `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${masterProjectTableId}/records/search`,
-        {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            filter: {
-              conjunction: 'and',
-              conditions: [{
-                field_name: 'Project Name',
-                operator: 'is',
-                value: [projectName],
-              }],
-            },
-            page_size: 1,
-          }),
+    let masterProjectFieldId = fieldMap['master project'] || null;
+
+    if (masterProjectFieldId && projectName && masterProjectTableId) {
+      try {
+        // Lấy danh sách fields của Master Project để tìm tên đúng cột "Project Name"
+        const mpFieldsRes = await fetch(
+          `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${masterProjectTableId}/fields`,
+          { headers }
+        );
+        const mpFieldsData = await mpFieldsRes.json();
+
+        let projectNameFieldName = 'Project Name'; // default
+        if (mpFieldsData.code === 0) {
+          // Tìm field nào có tên gần giống "project name"
+          const pnField = mpFieldsData.data.items.find(f =>
+            f.field_name.toLowerCase().includes('project name') ||
+            f.field_name.toLowerCase().includes('project')
+          );
+          if (pnField) projectNameFieldName = pnField.field_name;
         }
-      );
-      const searchData = await searchRes.json();
-      if (searchData.code === 0 && searchData.data?.items?.length > 0) {
-        masterProjectRecordId = searchData.data.items[0].record_id;
+
+        // Tìm record trong Master Project khớp với tên project
+        const searchRes = await fetch(
+          `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${masterProjectTableId}/records/search`,
+          {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              filter: {
+                conjunction: 'and',
+                conditions: [{
+                  field_name: projectNameFieldName,
+                  operator: 'contains',
+                  value: [projectName],
+                }],
+              },
+              page_size: 1,
+            }),
+          }
+        );
+        const searchData = await searchRes.json();
+        if (searchData.code === 0 && searchData.data?.items?.length > 0) {
+          masterProjectRecordId = searchData.data.items[0].record_id;
+        }
+      } catch (_) {
+        // Bỏ qua lỗi project search — sync chính vẫn chạy
       }
     }
 
     // Bước 4: Build records với field IDs
-    const masterProjectFieldId = fieldMap['master project'];
-
     const mappedRecords = records.map(r => {
       const newFields = {};
       for (const [name, value] of Object.entries(r.fields)) {
@@ -85,7 +107,7 @@ export default async function handler(req, res) {
           newFields[fid] = value;
         }
       }
-      // Link Master Project nếu tìm được record ID
+      // Gắn Master Project nếu tìm được record ID
       if (masterProjectFieldId && masterProjectRecordId) {
         newFields[masterProjectFieldId] = [{ record_id: masterProjectRecordId }];
       }
@@ -113,7 +135,11 @@ export default async function handler(req, res) {
       totalCreated += syncData.data?.records?.length || batch.length;
     }
 
-    return res.status(200).json({ success: true, created: totalCreated });
+    return res.status(200).json({
+      success: true,
+      created: totalCreated,
+      projectLinked: !!masterProjectRecordId,
+    });
 
   } catch (error) {
     return res.status(500).json({ success: false, error: 'Lỗi server: ' + error.message });
