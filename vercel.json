@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "api/lark-token.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    { "source": "/api/lark-token", "destination": "/api/lark-token.js" }
+  ]
+}
