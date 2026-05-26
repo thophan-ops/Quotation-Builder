@@ -7,20 +7,18 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#F7F6F3;--surface:#fff;--surface2:#F0EFE9;--border:#E2E0D8;--border2:#CBC9BF;
-  --text:#1A1916;--text2:#6A6860;--text3:#A09D96;
-  --orange:#E8622A;--orange-light:#FDF0EA;--orange-border:#F4C4A8;
-  --green:#1A7A4A;--green-bg:#EAF5EE;
-  --red:#B53030;--red-bg:#FDF0F0;
-  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
-  --r:8px;--r-sm:5px;
+--bg:#F7F6F3;--surface:#fff;--surface2:#F0EFE9;--border:#E2E0D8;--border2:#CBC9BF;
+--text:#1A1916;--text2:#6A6860;--text3:#A09D96;
+--orange:#E8622A;--orange-light:#FDF0EA;--orange-border:#F4C4A8;
+--green:#1A7A4A;--green-bg:#EAF5EE;
+--red:#B53030;--red-bg:#FDF0F0;
+--mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+--r:8px;--r-sm:5px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;height:100vh;overflow:hidden}
-
 /* LAYOUT */
 .app{display:grid;grid-template-columns:280px 1fr 320px;height:100vh;overflow:hidden}
-
 /* ── SIDEBAR ── */
 .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .sb-top{padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
@@ -55,7 +53,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13
 .sb-summary-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:4px}
 .sb-summary-val{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text)}
 .sb-summary-sub{font-size:11px;color:var(--text3);margin-top:2px}
-
 /* ── MAIN ── */
 .main{display:flex;flex-direction:column;overflow:hidden}
 .main-top{padding:14px 20px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
@@ -65,9 +62,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13
 .field input,.field select{font-family:var(--sans);font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--text);outline:none;transition:border .15s;width:100%}
 .field input:focus,.field select:focus{border-color:var(--orange);background:var(--surface)}
 .field input::placeholder{color:var(--text3)}
-
 .main-body{flex:1;overflow-y:auto;padding:16px 20px}
-
 /* SELECTED ITEMS TABLE */
 .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .table-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:8px}
@@ -89,12 +84,10 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13
 .row-total{font-family:var(--mono);font-size:12px;font-weight:500;text-align:right;color:var(--text)}
 .del-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;display:flex;align-items:center;justify-content:center;border-radius:4px;padding:3px;transition:all .15s;width:28px;height:28px}
 .del-btn:hover{color:var(--red);background:var(--red-bg)}
-
 /* DELIVERABLES */
 .deliverables-wrap{margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .deliverables-head{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
 .deliverables-body textarea{width:100%;font-family:var(--sans);font-size:13px;padding:12px 14px;border:none;background:var(--surface);color:var(--text);resize:none;outline:none;min-height:80px;line-height:1.6}
-
 /* BOTTOM BAR */
 .main-bottom{padding:10px 20px;border-top:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0}
 .bottom-adjust{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -111,7 +104,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13
 .btn-orange:hover{opacity:.88;background:var(--orange)}
 .btn-green{background:var(--green);color:#fff;border-color:var(--green)}
 .btn-green:hover{opacity:.88;background:var(--green)}
-
 /* ── PDF PREVIEW ── */
 .preview{background:#E8E6E0;border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .preview-head{padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -139,13 +131,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13
 .pdf-sum-row.grand{font-size:12px;font-weight:600;color:var(--text);border-top:1px solid var(--border);margin-top:4px;padding-top:6px}
 .pdf-sum-val{font-family:var(--mono);font-weight:500;color:var(--text)}
 .pdf-note{font-size:9px;color:var(--text3);margin-top:12px;line-height:1.6;border-top:1px dashed var(--border);padding-top:8px}
-
 /* TOAST */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;font-size:12px;padding:10px 18px;border-radius:20px;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.success{background:var(--green)}
 .toast.error{background:var(--red)}
-
 /* STATUS */
 .sync-status{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px}
 .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0}
@@ -266,16 +256,15 @@ const LARK_CONFIG = {
   appId: 'cli_aa9ffc6854f85e15',
   appSecret: 'YFLhGWmmlNH8BEFQ1zsmne8mSDUNMBmL',
   baseId: 'Prz6bGz0aaG56QsO5mUjdfeRp6c',
-  tableId: 'tblqc8tsMgGP6Job',
-  // Tên các field trong Lark Base Quotation Lines
+  tableId: 'tblZsLiP9frGMFAN',   // ✅ FIX: đã cập nhật đúng tableId
   fields: {
-    itemName:   'Items Name',
-    group:      'Nhóm',
-    unit:       'Unit',
-    qty:        'Quantity',
-    unitRate:   'Unit Rate',
-    total:      'Total',
-    project:    'Master Project',
+    itemName: 'Items Name',
+    group: 'Nhóm',
+    unit: 'Unit',
+    qty: 'Quantity',
+    unitRate: 'Unit Rate',
+    total: 'Total',
+    project: 'Master Project',
   }
 };
 
@@ -360,8 +349,7 @@ const CATALOG = [
 ];
 
 // ══ STATE ══
-let selected = []; // {catalogId, itemIdx, name, group, color, unit, qty, rate}
-
+let selected = [];
 const fmt = n => 'đ' + Math.round(n).toLocaleString('vi-VN');
 const fmtNum = n => Math.round(n).toLocaleString('vi-VN');
 
@@ -378,26 +366,26 @@ function renderSidebar(filter='') {
     group.className = 'sb-group';
     const isOpen = !filter ? (cat._open || false) : true;
     group.innerHTML = `
-<div class="sb-group-head" onclick="toggleGroup('${cat.id}')">
-  <span class="sb-group-name">
-    <span class="sb-dot" style="background:${cat.color}"></span>
-    ${cat.name}
-  </span>
-  <span class="sb-chev${isOpen?' open':''}" id="chev_${cat.id}">▶</span>
-</div>
-<div class="sb-items${isOpen?' open':''}" id="grp_${cat.id}">
-  ${(filter ? filtered : cat.items).map((it,ii) => {
-    const realIdx = cat.items.indexOf(it);
-    const isSel = selected.some(s => s.catalogId===cat.id && s.itemIdx===realIdx);
-    return `<div class="sb-item${isSel?' selected':''}" onclick="toggleItem('${cat.id}',${realIdx})">
-      <div class="sb-item-left">
-        <div class="sb-item-name">${it.name}</div>
-        <div class="sb-item-rate">${fmt(it.rate)} <span class="sb-item-unit">/ ${it.unit}</span></div>
+      <div class="sb-group-head" onclick="toggleGroup('${cat.id}')">
+        <span class="sb-group-name">
+          <span class="sb-dot" style="background:${cat.color}"></span>
+          ${cat.name}
+        </span>
+        <span class="sb-chev${isOpen?' open':''}" id="chev_${cat.id}">▶</span>
       </div>
-      <div class="sb-add-icon">${isSel?'✓':'+'}</div>
-    </div>`;
-  }).join('')}
-</div>`;
+      <div class="sb-items${isOpen?' open':''}" id="grp_${cat.id}">
+        ${(filter ? filtered : cat.items).map((it,ii) => {
+          const realIdx = cat.items.indexOf(it);
+          const isSel = selected.some(s => s.catalogId===cat.id && s.itemIdx===realIdx);
+          return `<div class="sb-item${isSel?' selected':''}" onclick="toggleItem('${cat.id}',${realIdx})">
+            <div class="sb-item-left">
+              <div class="sb-item-name">${it.name}</div>
+              <div class="sb-item-rate">${fmt(it.rate)} <span class="sb-item-unit">/ ${it.unit}</span></div>
+            </div>
+            <div class="sb-add-icon">${isSel?'✓':'+'}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
     el.appendChild(group);
   });
 }
@@ -445,25 +433,24 @@ function renderTable() {
   empty.style.display = 'none';
   head.style.display = 'block';
   body.innerHTML = selected.map((s,i) => `
-<div class="table-row" id="row_${s.uid}">
-  <div>
-    <div class="row-name">${s.name}</div>
-    <div class="row-group"><span class="row-group-dot" style="background:${s.color}"></span>${s.group}</div>
-  </div>
-  <select class="unit-sel" onchange="updateUnit(${i},this.value)">
-    ${['DAY','PACK','PERSON','LAYOUT','HOUR','NIGHT','SET'].map(u=>`<option${u===s.unit?' selected':''}>${u}</option>`).join('')}
-  </select>
-  <input type="number" class="num-in" value="${s.qty}" min="0.5" step="0.5" onchange="updateQty(${i},this.value)" style="width:80px"/>
-  <input type="number" class="num-in" value="${s.rate}" min="0" step="500000" onchange="updateRate(${i},this.value)"/>
-  <button class="del-btn" onclick="removeItem(${i})">✕</button>
-</div>`).join('');
+    <div class="table-row" id="row_${s.uid}">
+      <div>
+        <div class="row-name">${s.name}</div>
+        <div class="row-group"><span class="row-group-dot" style="background:${s.color}"></span>${s.group}</div>
+      </div>
+      <select class="unit-sel" onchange="updateUnit(${i},this.value)">
+        ${['DAY','PACK','PERSON','LAYOUT','HOUR','NIGHT','SET'].map(u=>`<option${u===s.unit?' selected':''}>${u}</option>`).join('')}
+      </select>
+      <input type="number" class="num-in" value="${s.qty}" min="0.5" step="0.5" onchange="updateQty(${i},this.value)" style="width:80px"/>
+      <input type="number" class="num-in" value="${s.rate}" min="0" step="500000" onchange="updateRate(${i},this.value)"/>
+      <button class="del-btn" onclick="removeItem(${i})">✕</button>
+    </div>`).join('');
 }
 
 function updateQty(i,v){selected[i].qty=parseFloat(v)||1;recalc();}
 function updateRate(i,v){selected[i].rate=parseInt(v)||0;recalc();}
 function updateUnit(i,v){selected[i].unit=v;recalc();}
 function removeItem(i){
-  const s=selected[i];
   selected.splice(i,1);
   renderSidebar(document.getElementById('search-input').value);
   renderTable();
@@ -505,14 +492,11 @@ function renderPreview(sub, disc, feeAmt, vatAmt, total) {
   const type = document.getElementById('f-type').value;
   const date = document.getElementById('f-date').value ? new Date(document.getElementById('f-date').value).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN');
   const deliverables = document.getElementById('f-deliverables').value;
-
-  // Group items by catalog group
   const groups = {};
   selected.forEach(s => {
     if (!groups[s.group]) groups[s.group] = {color:s.color, items:[]};
     groups[s.group].items.push(s);
   });
-
   let rowsHTML = '';
   let n = 1;
   Object.entries(groups).forEach(([grp, data]) => {
@@ -527,74 +511,51 @@ function renderPreview(sub, disc, feeAmt, vatAmt, total) {
       </tr>`;
     });
   });
-
   const delivHTML = deliverables ? `
     <div style="margin-top:12px;padding:10px 12px;background:#FAFAF8;border-radius:6px;border:1px solid #EEE">
       <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#999;margin-bottom:6px">Deliverables / Sản phẩm bàn giao</div>
       <div style="font-size:10px;color:#333;line-height:1.7;white-space:pre-line">${deliverables}</div>
     </div>` : '';
-
   document.getElementById('pdf-card').innerHTML = `
-<div class="pdf-header">
-  <div class="pdf-co">
-    ${COMPANY.name} &nbsp;·&nbsp; ${COMPANY.address}<br/>
-    T: ${COMPANY.phone} &nbsp;·&nbsp; <a href="mailto:${COMPANY.email}">${COMPANY.email}</a>
-  </div>
-  <div class="pdf-title">QUOTATION / BẢNG BÁO GIÁ</div>
-  <div class="pdf-meta-grid">
-    <div class="pdf-meta-row">Client: <span>${client}</span></div>
-    <div class="pdf-meta-row">Type: <span>${type}</span></div>
-    <div class="pdf-meta-row">Project: <span>${proj}</span></div>
-    <div class="pdf-meta-row">Ngày: <span>${date}</span></div>
-  </div>
-</div>
-${selected.length ? `
-<table class="pdf-table">
-  <tr>
-    <th class="pdf-th" style="width:20px">#</th>
-    <th class="pdf-th">Service / Dịch vụ</th>
-    <th class="pdf-th c" style="width:40px">Mã TS</th>
-    <th class="pdf-th r" style="width:30px">Qt</th>
-    <th class="pdf-th r" style="width:80px">VND</th>
-  </tr>
-  ${rowsHTML}
-</table>
-<div class="pdf-footer">
-  <div class="pdf-sum-row"><span>Tổng</span><span class="pdf-sum-val">${fmt(sub)}</span></div>
-  ${disc>0?`<div class="pdf-sum-row"><span>Giảm giá</span><span class="pdf-sum-val">- ${fmt(disc)}</span></div>`:''}
-  ${feeAmt>0?`<div class="pdf-sum-row"><span>Production fee</span><span class="pdf-sum-val">${fmt(feeAmt)}</span></div>`:''}
-  <div class="pdf-sum-row"><span>Trước thuế</span><span class="pdf-sum-val">${fmt(sub-disc+feeAmt)}</span></div>
-  <div class="pdf-sum-row"><span>VAT ${document.getElementById('vat-rate').value}%</span><span class="pdf-sum-val">${fmt(vatAmt)}</span></div>
-  <div class="pdf-sum-row grand"><span>TỔNG SAU THUẾ</span><span class="pdf-sum-val" style="color:#E8622A">${fmt(total)}</span></div>
-</div>` : '<div style="padding:20px 0;text-align:center;color:#ccc;font-size:12px">Chưa có hạng mục nào được chọn</div>'}
-${delivHTML}
-<div class="pdf-note">
-  Báo giá có hiệu lực trong 7 ngày · Giá chưa bao gồm chi phí phát sinh ngoài phạm vi · Thanh toán: 50% trước khi sản xuất, 50% khi bàn giao
-</div>`;
+    <div class="pdf-header">
+      <div class="pdf-co">
+        ${COMPANY.name} &nbsp;·&nbsp; ${COMPANY.address}<br/>
+        T: ${COMPANY.phone} &nbsp;·&nbsp; <a href="mailto:${COMPANY.email}">${COMPANY.email}</a>
+      </div>
+      <div class="pdf-title">QUOTATION / BẢNG BÁO GIÁ</div>
+      <div class="pdf-meta-grid">
+        <div class="pdf-meta-row">Client: <span>${client}</span></div>
+        <div class="pdf-meta-row">Type: <span>${type}</span></div>
+        <div class="pdf-meta-row">Project: <span>${proj}</span></div>
+        <div class="pdf-meta-row">Ngày: <span>${date}</span></div>
+      </div>
+    </div>
+    ${selected.length ? `
+    <table class="pdf-table">
+      <tr>
+        <th class="pdf-th" style="width:20px">#</th>
+        <th class="pdf-th">Service / Dịch vụ</th>
+        <th class="pdf-th c" style="width:40px">Mã TS</th>
+        <th class="pdf-th r" style="width:30px">Qt</th>
+        <th class="pdf-th r" style="width:80px">VND</th>
+      </tr>
+      ${rowsHTML}
+    </table>
+    <div class="pdf-footer">
+      <div class="pdf-sum-row"><span>Tổng</span><span class="pdf-sum-val">${fmt(sub)}</span></div>
+      ${disc>0?`<div class="pdf-sum-row"><span>Giảm giá</span><span class="pdf-sum-val">- ${fmt(disc)}</span></div>`:''}
+      ${feeAmt>0?`<div class="pdf-sum-row"><span>Production fee</span><span class="pdf-sum-val">${fmt(feeAmt)}</span></div>`:''}
+      <div class="pdf-sum-row"><span>Trước thuế</span><span class="pdf-sum-val">${fmt(sub-disc+feeAmt)}</span></div>
+      <div class="pdf-sum-row"><span>VAT ${document.getElementById('vat-rate').value}%</span><span class="pdf-sum-val">${fmt(vatAmt)}</span></div>
+      <div class="pdf-sum-row grand"><span>TỔNG SAU THUẾ</span><span class="pdf-sum-val" style="color:#E8622A">${fmt(total)}</span></div>
+    </div>` : '<div style="padding:20px 0;text-align:center;color:#ccc;font-size:12px">Chưa có hạng mục nào được chọn</div>'}
+    ${delivHTML}
+    <div class="pdf-note">
+      Báo giá có hiệu lực trong 7 ngày · Giá chưa bao gồm chi phí phát sinh ngoài phạm vi · Thanh toán: 50% trước khi sản xuất, 50% khi bàn giao
+    </div>`;
 }
 
-// ══ LARK API ══
-let accessToken = null;
-let tokenExpiry = 0;
-
-async function getLarkToken() {
-  if (accessToken && Date.now() < tokenExpiry) return accessToken;
-  try {
-    const res = await fetch('/api/lark-token', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({app_id: LARK_CONFIG.appId, app_secret: LARK_CONFIG.appSecret})
-    });
-    const data = await res.json();
-    if (data.code !== 0) throw new Error(data.msg);
-    accessToken = data.tenant_access_token;
-    tokenExpiry = Date.now() + (data.expire - 60) * 1000;
-    return accessToken;
-  } catch(e) {
-    throw new Error('Không lấy được token: ' + e.message);
-  }
-}
-
+// ══ LARK SYNC (FIX: gọi qua proxy /api/lark-sync thay vì trực tiếp) ══
 async function syncToLark() {
   if (!selected.length) { showToast('Chưa có hạng mục nào!', 'error'); return; }
   const proj = document.getElementById('f-proj').value;
@@ -604,7 +565,6 @@ async function syncToLark() {
   document.getElementById('sync-btn').disabled = true;
 
   try {
-    const token = await getLarkToken();
     const records = selected.map(s => ({
       fields: {
         [LARK_CONFIG.fields.itemName]: s.name,
@@ -612,33 +572,32 @@ async function syncToLark() {
         [LARK_CONFIG.fields.unit]: s.unit,
         [LARK_CONFIG.fields.qty]: s.qty,
         [LARK_CONFIG.fields.unitRate]: s.rate,
+        [LARK_CONFIG.fields.project]: proj,
       }
     }));
 
-    // Batch create records
-    const batchSize = 500;
-    let created = 0;
-    for (let i = 0; i < records.length; i += batchSize) {
-      const batch = records.slice(i, i + batchSize);
-      const res = await fetch(
-        `https://open.larksuite.com/open-apis/bitable/v1/apps/${LARK_CONFIG.baseId}/tables/${LARK_CONFIG.tableId}/records/batch_create`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          body: JSON.stringify({records: batch})
-        }
-      );
-      const data = await res.json();
-      if (data.code !== 0) throw new Error(data.msg || 'Lỗi khi tạo records');
-      created += data.data?.records?.length || batch.length;
+    const res = await fetch('/api/lark-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        appId: LARK_CONFIG.appId,
+        appSecret: LARK_CONFIG.appSecret,
+        baseId: LARK_CONFIG.baseId,
+        tableId: LARK_CONFIG.tableId,
+        records,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Lỗi không xác định');
     }
 
-    setSyncStatus('ok', `Đã đồng bộ ${created} hạng mục`);
-    showToast(`✓ Đã đồng bộ ${created} hạng mục vào Lark Base`, 'success');
-  } catch(e) {
+    setSyncStatus('ok', `Đã đồng bộ ${data.created} hạng mục`);
+    showToast(`✓ Đã đồng bộ ${data.created} hạng mục vào Lark Base`, 'success');
+
+  } catch (e) {
     setSyncStatus('error', 'Lỗi đồng bộ');
     showToast('Lỗi: ' + e.message, 'error');
     console.error(e);
@@ -658,32 +617,32 @@ function printPDF() {
   const card = document.getElementById('pdf-card').innerHTML;
   const win = window.open('','_blank');
   win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
-  <title>Quotation</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet"/>
-  <style>
-  body{font-family:'DM Sans',Arial,sans-serif;margin:0;padding:32px 40px;color:#1A1916;background:#fff;font-size:12px}
-  .pdf-header{margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1A1916}
-  .pdf-co{font-size:9px;color:#999;margin-bottom:8px;line-height:1.8}
-  .pdf-co a{color:#E8622A;text-decoration:none}
-  .pdf-title{font-size:18px;font-weight:600;color:#1A1916}
-  .pdf-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
-  .pdf-meta-row{font-size:10px;color:#666}
-  .pdf-meta-row span{font-weight:500;color:#1A1916}
-  table{width:100%;border-collapse:collapse;margin-top:8px}
-  .pdf-th{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#999;padding:5px 6px;border-bottom:1px solid #E0E0E0;text-align:left}
-  .pdf-th.r{text-align:right}.pdf-th.c{text-align:center}
-  .pdf-td{font-size:10px;padding:5px 6px;border-bottom:1px solid #F5F5F5;color:#1A1916;vertical-align:top}
-  .pdf-td.r{text-align:right;font-family:'DM Mono',monospace}
-  .pdf-td.c{text-align:center}
-  .pdf-td.muted{color:#999}
-  .pdf-footer{margin-top:12px;border-top:1px solid #E0E0E0;padding-top:10px}
-  .pdf-sum-row{display:flex;justify-content:space-between;font-size:10px;padding:3px 0;color:#666}
-  .pdf-sum-val{font-family:'DM Mono',monospace;font-weight:500;color:#1A1916}
-  .pdf-sum-row.grand{font-size:13px;font-weight:600;color:#1A1916;border-top:1px solid #1A1916;margin-top:4px;padding-top:6px}
-  .pdf-note{font-size:9px;color:#aaa;margin-top:12px;border-top:1px dashed #E0E0E0;padding-top:8px;line-height:1.6}
-  @media print{body{padding:16px 20px}@page{margin:.8cm}}
-  </style></head><body>${card}
-  <script>setTimeout(()=>window.print(),400)<\/script></body></html>`);
+<title>Quotation</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet"/>
+<style>
+body{font-family:'DM Sans',Arial,sans-serif;margin:0;padding:32px 40px;color:#1A1916;background:#fff;font-size:12px}
+.pdf-header{margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1A1916}
+.pdf-co{font-size:9px;color:#999;margin-bottom:8px;line-height:1.8}
+.pdf-co a{color:#E8622A;text-decoration:none}
+.pdf-title{font-size:18px;font-weight:600;color:#1A1916}
+.pdf-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+.pdf-meta-row{font-size:10px;color:#666}
+.pdf-meta-row span{font-weight:500;color:#1A1916}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+.pdf-th{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#999;padding:5px 6px;border-bottom:1px solid #E0E0E0;text-align:left}
+.pdf-th.r{text-align:right}.pdf-th.c{text-align:center}
+.pdf-td{font-size:10px;padding:5px 6px;border-bottom:1px solid #F5F5F5;color:#1A1916;vertical-align:top}
+.pdf-td.r{text-align:right;font-family:'DM Mono',monospace}
+.pdf-td.c{text-align:center}
+.pdf-td.muted{color:#999}
+.pdf-footer{margin-top:12px;border-top:1px solid #E0E0E0;padding-top:10px}
+.pdf-sum-row{display:flex;justify-content:space-between;font-size:10px;padding:3px 0;color:#666}
+.pdf-sum-val{font-family:'DM Mono',monospace;font-weight:500;color:#1A1916}
+.pdf-sum-row.grand{font-size:13px;font-weight:600;color:#1A1916;border-top:1px solid #1A1916;margin-top:4px;padding-top:6px}
+.pdf-note{font-size:9px;color:#aaa;margin-top:12px;border-top:1px dashed #E0E0E0;padding-top:8px;line-height:1.6}
+@media print{body{padding:16px 20px}@page{margin:.8cm}}
+</style></head><body>${card}
+<script>setTimeout(()=>window.print(),400)<\/script></body></html>`);
   win.document.close();
 }
 
