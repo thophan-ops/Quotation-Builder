@@ -256,7 +256,8 @@ const LARK_CONFIG = {
   appId: 'cli_aa9ffc6854f85e15',
   appSecret: 'YFLhGWmmlNH8BEFQ1zsmne8mSDUNMBmL',
   baseId: 'Prz6bGz0aaG56QsO5mUjdfeRp6c',
-  tableId: 'tblqc8tsMgGP6Job',    // ✅ Quotation Lines table
+  tableId: 'tblqc8tsMgGP6Job',              // ✅ Quotation Lines table
+  masterProjectTableId: 'tblZsLiP9frGMFAN', // ✅ Master Project 2026 table
   fields: {
     itemName: 'Items Name',
     group: 'Nhóm',
@@ -583,6 +584,8 @@ async function syncToLark() {
         appSecret: LARK_CONFIG.appSecret,
         baseId: LARK_CONFIG.baseId,
         tableId: LARK_CONFIG.tableId,
+        masterProjectTableId: LARK_CONFIG.masterProjectTableId,
+        projectName: proj,
         records,
       }),
     });
