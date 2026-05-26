@@ -12,7 +12,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Bước 1: Lấy token
     const tokenRes = await fetch(
       'https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal',
       {
@@ -31,7 +30,6 @@ export default async function handler(req, res) {
       Authorization: 'Bearer ' + token,
     };
 
-    // Bước 2: Lấy field IDs của bảng Quotation Lines
     const fieldsRes = await fetch(
       `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${tableId}/fields`,
       { headers }
@@ -41,19 +39,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Lỗi lấy fields: ' + fieldsData.msg });
     }
 
-    // Map: tên field (lowercase) → field_id
     const fieldMap = {};
     for (const f of fieldsData.data.items) {
       fieldMap[f.field_name.trim().toLowerCase()] = f.field_id;
     }
     const masterProjectFieldId = fieldMap['master project'] || null;
 
-    // Bước 3: Build records — KHÔNG gồm Master Project (linked field)
     const mappedRecords = records.map(r => {
       const newFields = {};
       for (const [name, value] of Object.entries(r.fields)) {
         const key = name.trim().toLowerCase();
-        if (key === 'master project') continue; // bỏ qua linked field
+        if (key === 'master project') continue;
         const fid = fieldMap[key];
         if (fid && value !== undefined && value !== null && value !== '') {
           newFields[fid] = value;
@@ -62,7 +58,6 @@ export default async function handler(req, res) {
       return { fields: newFields };
     });
 
-    // Bước 4: Batch create (không có Master Project)
     const BATCH_SIZE = 500;
     const createdRecordIds = [];
 
@@ -85,11 +80,9 @@ export default async function handler(req, res) {
       }
     }
 
-    // Bước 5: Tìm Master Project record rồi update (tách riêng để không ảnh hưởng step 4)
     let projectLinked = false;
     if (masterProjectFieldId && projectName && masterProjectTableId && createdRecordIds.length > 0) {
       try {
-        // Lấy tất cả records từ Master Project, tìm theo tên
         const mpRes = await fetch(
           `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${masterProjectTableId}/records?page_size=100`,
           { headers }
@@ -100,7 +93,6 @@ export default async function handler(req, res) {
         if (mpData.code === 0 && mpData.data?.items) {
           for (const item of mpData.data.items) {
             const fields = item.fields;
-            // Tìm field nào có value khớp với projectName
             for (const [, val] of Object.entries(fields)) {
               const text = typeof val === 'string' ? val : (val?.[0]?.text || '');
               if (text.toLowerCase().includes(projectName.toLowerCase())) {
@@ -112,7 +104,6 @@ export default async function handler(req, res) {
           }
         }
 
-        // Update từng record đã tạo để gắn Master Project
         if (masterProjectRecordId) {
           const updateRecords = createdRecordIds.map(rid => ({
             record_id: rid,
@@ -132,9 +123,7 @@ export default async function handler(req, res) {
           }
           projectLinked = true;
         }
-      } catch (_) {
-        // Bỏ qua lỗi linking — records đã được tạo
-      }
+      } catch (_) {}
     }
 
     return res.status(200).json({
