@@ -580,7 +580,7 @@ let tokenExpiry = 0;
 async function getLarkToken() {
   if (accessToken && Date.now() < tokenExpiry) return accessToken;
   try {
-    const res = await fetch('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', {
+    const res = await fetch('/api/lark-token', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({app_id: LARK_CONFIG.appId, app_secret: LARK_CONFIG.appSecret})
@@ -718,4 +718,3 @@ renderPreview();
 </script>
 </body>
 </html>
-EOF
