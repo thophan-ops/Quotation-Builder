@@ -46,77 +46,25 @@ export default async function handler(req, res) {
     for (const f of fieldsData.data.items) {
       fieldMap[f.field_name.trim().toLowerCase()] = f.field_id;
     }
+    const masterProjectFieldId = fieldMap['master project'] || null;
 
-    // Bước 3: Tìm Master Project record ID (độc lập, không ảnh hưởng sync chính)
-    let masterProjectRecordId = null;
-    let masterProjectFieldId = fieldMap['master project'] || null;
-
-    if (masterProjectFieldId && projectName && masterProjectTableId) {
-      try {
-        // Lấy danh sách fields của Master Project để tìm tên đúng cột "Project Name"
-        const mpFieldsRes = await fetch(
-          `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${masterProjectTableId}/fields`,
-          { headers }
-        );
-        const mpFieldsData = await mpFieldsRes.json();
-
-        let projectNameFieldName = 'Project Name'; // default
-        if (mpFieldsData.code === 0) {
-          // Tìm field nào có tên gần giống "project name"
-          const pnField = mpFieldsData.data.items.find(f =>
-            f.field_name.toLowerCase().includes('project name') ||
-            f.field_name.toLowerCase().includes('project')
-          );
-          if (pnField) projectNameFieldName = pnField.field_name;
-        }
-
-        // Tìm record trong Master Project khớp với tên project
-        const searchRes = await fetch(
-          `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${masterProjectTableId}/records/search`,
-          {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              filter: {
-                conjunction: 'and',
-                conditions: [{
-                  field_name: projectNameFieldName,
-                  operator: 'contains',
-                  value: [projectName],
-                }],
-              },
-              page_size: 1,
-            }),
-          }
-        );
-        const searchData = await searchRes.json();
-        if (searchData.code === 0 && searchData.data?.items?.length > 0) {
-          masterProjectRecordId = searchData.data.items[0].record_id;
-        }
-      } catch (_) {
-        // Bỏ qua lỗi project search — sync chính vẫn chạy
-      }
-    }
-
-    // Bước 4: Build records với field IDs
+    // Bước 3: Build records — KHÔNG gồm Master Project (linked field)
     const mappedRecords = records.map(r => {
       const newFields = {};
       for (const [name, value] of Object.entries(r.fields)) {
-        const fid = fieldMap[name.trim().toLowerCase()];
+        const key = name.trim().toLowerCase();
+        if (key === 'master project') continue; // bỏ qua linked field
+        const fid = fieldMap[key];
         if (fid && value !== undefined && value !== null && value !== '') {
           newFields[fid] = value;
         }
       }
-      // Gắn Master Project nếu tìm được record ID
-      if (masterProjectFieldId && masterProjectRecordId) {
-        newFields[masterProjectFieldId] = [{ record_id: masterProjectRecordId }];
-      }
       return { fields: newFields };
     });
 
-    // Bước 5: Batch create
+    // Bước 4: Batch create (không có Master Project)
     const BATCH_SIZE = 500;
-    let totalCreated = 0;
+    const createdRecordIds = [];
 
     for (let i = 0; i < mappedRecords.length; i += BATCH_SIZE) {
       const batch = mappedRecords.slice(i, i + BATCH_SIZE);
@@ -132,13 +80,67 @@ export default async function handler(req, res) {
       if (syncData.code !== 0) {
         return res.status(400).json({ success: false, error: 'Lỗi tạo records: ' + syncData.msg });
       }
-      totalCreated += syncData.data?.records?.length || batch.length;
+      for (const r of (syncData.data?.records || [])) {
+        createdRecordIds.push(r.record_id);
+      }
+    }
+
+    // Bước 5: Tìm Master Project record rồi update (tách riêng để không ảnh hưởng step 4)
+    let projectLinked = false;
+    if (masterProjectFieldId && projectName && masterProjectTableId && createdRecordIds.length > 0) {
+      try {
+        // Lấy tất cả records từ Master Project, tìm theo tên
+        const mpRes = await fetch(
+          `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${masterProjectTableId}/records?page_size=100`,
+          { headers }
+        );
+        const mpData = await mpRes.json();
+
+        let masterProjectRecordId = null;
+        if (mpData.code === 0 && mpData.data?.items) {
+          for (const item of mpData.data.items) {
+            const fields = item.fields;
+            // Tìm field nào có value khớp với projectName
+            for (const [, val] of Object.entries(fields)) {
+              const text = typeof val === 'string' ? val : (val?.[0]?.text || '');
+              if (text.toLowerCase().includes(projectName.toLowerCase())) {
+                masterProjectRecordId = item.record_id;
+                break;
+              }
+            }
+            if (masterProjectRecordId) break;
+          }
+        }
+
+        // Update từng record đã tạo để gắn Master Project
+        if (masterProjectRecordId) {
+          const updateRecords = createdRecordIds.map(rid => ({
+            record_id: rid,
+            fields: { [masterProjectFieldId]: [{ record_id: masterProjectRecordId }] },
+          }));
+
+          for (let i = 0; i < updateRecords.length; i += 500) {
+            const batch = updateRecords.slice(i, i + 500);
+            await fetch(
+              `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${tableId}/records/batch_update`,
+              {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ records: batch }),
+              }
+            );
+          }
+          projectLinked = true;
+        }
+      } catch (_) {
+        // Bỏ qua lỗi linking — records đã được tạo
+      }
     }
 
     return res.status(200).json({
       success: true,
-      created: totalCreated,
-      projectLinked: !!masterProjectRecordId,
+      created: createdRecordIds.length,
+      projectLinked,
     });
 
   } catch (error) {
