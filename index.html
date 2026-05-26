@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Quotation Builder — Production</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#F7F6F3;--surface:#fff;--surface2:#F0EFE9;--border:#E2E0D8;--border2:#CBC9BF;
+  --text:#1A1916;--text2:#6A6860;--text3:#A09D96;
+  --orange:#E8622A;--orange-light:#FDF0EA;--orange-border:#F4C4A8;
+  --green:#1A7A4A;--green-bg:#EAF5EE;
+  --red:#B53030;--red-bg:#FDF0F0;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+  --r:8px;--r-sm:5px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;height:100vh;overflow:hidden}
+
+/* LAYOUT */
+.app{display:grid;grid-template-columns:280px 1fr 320px;height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-top{padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sb-brand{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.sb-title{font-size:15px;font-weight:500;color:var(--text);margin-top:2px}
+.sb-search{position:relative;margin-top:10px}
+.sb-search input{width:100%;font-family:var(--sans);font-size:12px;padding:6px 10px 6px 28px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--text);outline:none}
+.sb-search input:focus{border-color:var(--orange);background:var(--surface)}
+.sb-search input::placeholder{color:var(--text3)}
+.sb-search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px}
+.sb-list{flex:1;overflow-y:auto;padding:8px 0}
+.sb-group{margin-bottom:2px}
+.sb-group-head{display:flex;align-items:center;justify-content:space-between;padding:7px 16px 5px;cursor:pointer;user-select:none}
+.sb-group-head:hover{background:var(--surface2)}
+.sb-group-name{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:6px}
+.sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sb-chev{font-size:10px;color:var(--text3);transition:transform .18s;display:inline-block}
+.sb-chev.open{transform:rotate(90deg)}
+.sb-items{display:none;padding:2px 8px 6px}
+.sb-items.open{display:block}
+.sb-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:var(--r-sm);cursor:pointer;transition:background .12s;gap:8px}
+.sb-item:hover{background:var(--surface2)}
+.sb-item.selected{background:var(--orange-light);border:1px solid var(--orange-border)}
+.sb-item-left{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.sb-item-name{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-item-rate{font-size:11px;color:var(--orange);font-family:var(--mono)}
+.sb-item-unit{font-size:10px;color:var(--text3)}
+.sb-add-icon{width:20px;height:20px;border-radius:50%;background:var(--orange);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:300;line-height:1;transition:transform .15s}
+.sb-item:hover .sb-add-icon{transform:scale(1.15)}
+.sb-item.selected .sb-add-icon{background:var(--green)}
+.sb-bottom{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0}
+.sb-summary-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:4px}
+.sb-summary-val{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text)}
+.sb-summary-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── MAIN ── */
+.main{display:flex;flex-direction:column;overflow:hidden}
+.main-top{padding:14px 20px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+.field input,.field select{font-family:var(--sans);font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--text);outline:none;transition:border .15s;width:100%}
+.field input:focus,.field select:focus{border-color:var(--orange);background:var(--surface)}
+.field input::placeholder{color:var(--text3)}
+
+.main-body{flex:1;overflow-y:auto;padding:16px 20px}
+
+/* SELECTED ITEMS TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.table-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:8px}
+.table-empty-icon{font-size:32px;opacity:.3}
+.table-empty-text{font-size:13px;color:var(--text3);text-align:center}
+.table-head{display:grid;grid-template-columns:1fr 90px 110px 100px 36px;gap:8px;padding:8px 14px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.th{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
+.th.r{text-align:right}.th.c{text-align:center}
+.table-row{display:grid;grid-template-columns:1fr 90px 110px 100px 36px;gap:8px;padding:9px 14px;align-items:center;border-bottom:1px solid var(--border);transition:background .1s}
+.table-row:last-child{border-bottom:none}
+.table-row:hover{background:var(--surface2)}
+.row-name{font-size:13px;font-weight:500;color:var(--text)}
+.row-group{font-size:10px;color:var(--text3);margin-top:1px;display:flex;align-items:center;gap:4px}
+.row-group-dot{width:6px;height:6px;border-radius:50%}
+.num-in{width:100%;font-family:var(--mono);font-size:12px;padding:5px 7px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text);text-align:right;outline:none}
+.num-in:focus{border-color:var(--orange)}
+.unit-sel{width:100%;font-family:var(--sans);font-size:11px;padding:5px 6px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text);outline:none}
+.unit-sel:focus{border-color:var(--orange)}
+.row-total{font-family:var(--mono);font-size:12px;font-weight:500;text-align:right;color:var(--text)}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;display:flex;align-items:center;justify-content:center;border-radius:4px;padding:3px;transition:all .15s;width:28px;height:28px}
+.del-btn:hover{color:var(--red);background:var(--red-bg)}
+
+/* DELIVERABLES */
+.deliverables-wrap{margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.deliverables-head{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+.deliverables-body textarea{width:100%;font-family:var(--sans);font-size:13px;padding:12px 14px;border:none;background:var(--surface);color:var(--text);resize:none;outline:none;min-height:80px;line-height:1.6}
+
+/* BOTTOM BAR */
+.main-bottom{padding:10px 20px;border-top:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0}
+.bottom-adjust{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.adj-group{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.adj-group label{white-space:nowrap}
+.adj-input{font-family:var(--mono);font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--text);width:70px;text-align:right;outline:none}
+.adj-input:focus{border-color:var(--orange)}
+.adj-select{font-family:var(--sans);font-size:12px;padding:5px 7px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--text);outline:none}
+.bottom-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn{font-family:var(--sans);font-size:12px;font-weight:500;padding:8px 14px;border-radius:var(--r-sm);cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-orange{background:var(--orange);color:#fff;border-color:var(--orange)}
+.btn-orange:hover{opacity:.88;background:var(--orange)}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-green:hover{opacity:.88;background:var(--green)}
+
+/* ── PDF PREVIEW ── */
+.preview{background:#E8E6E0;border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.preview-head{padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.preview-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+.live-badge{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:var(--green-bg);color:var(--green);border:1px solid #9FD4B5}
+.preview-body{flex:1;overflow-y:auto;padding:14px}
+.pdf-card{background:var(--surface);border-radius:var(--r);padding:20px;min-height:400px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.pdf-header{margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--text)}
+.pdf-co{font-size:9px;color:var(--text3);margin-bottom:8px;line-height:1.8}
+.pdf-co a{color:var(--orange);text-decoration:none}
+.pdf-title{font-size:16px;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.pdf-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+.pdf-meta-row{font-size:10px;color:var(--text2)}
+.pdf-meta-row span{font-weight:500;color:var(--text)}
+.pdf-section-head{background:var(--surface2);padding:4px 8px;font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin:8px -20px;padding-left:20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.pdf-table{width:100%;border-collapse:collapse;margin-top:6px}
+.pdf-th{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);padding:4px 6px;border-bottom:1px solid var(--border);text-align:left}
+.pdf-th.r{text-align:right}
+.pdf-td{font-size:10px;padding:5px 6px;border-bottom:1px solid var(--surface2);color:var(--text);vertical-align:top}
+.pdf-td.r{text-align:right;font-family:var(--mono)}
+.pdf-td.c{text-align:center}
+.pdf-td.muted{color:var(--text3)}
+.pdf-footer{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+.pdf-sum-row{display:flex;justify-content:space-between;font-size:10px;padding:3px 0;color:var(--text2)}
+.pdf-sum-row.grand{font-size:12px;font-weight:600;color:var(--text);border-top:1px solid var(--border);margin-top:4px;padding-top:6px}
+.pdf-sum-val{font-family:var(--mono);font-weight:500;color:var(--text)}
+.pdf-note{font-size:9px;color:var(--text3);margin-top:12px;line-height:1.6;border-top:1px dashed var(--border);padding-top:8px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;font-size:12px;padding:10px 18px;border-radius:20px;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--green)}
+.toast.error{background:var(--red)}
+
+/* STATUS */
+.sync-status{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.sync-dot.ok{background:var(--green)}
+.sync-dot.syncing{background:var(--orange);animation:pulse 1s infinite}
+.sync-dot.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <div class="sb-brand">Production Tool</div>
+    <div class="sb-title">Quotation Builder</div>
+    <div class="sb-search">
+      <span class="sb-search-icon">⌕</span>
+      <input type="text" id="search-input" placeholder="Tìm hạng mục..." oninput="filterItems(this.value)"/>
+    </div>
+  </div>
+  <div class="sb-list" id="sb-list"></div>
+  <div class="sb-bottom">
+    <div class="sb-summary-label">Tổng đã chọn</div>
+    <div class="sb-summary-val" id="sb-total">đ0</div>
+    <div class="sb-summary-sub" id="sb-count">0 hạng mục</div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+  <div class="main-top">
+    <div class="meta-grid">
+      <div class="field"><label>Khách hàng</label><input id="f-client" type="text" placeholder="KFC / Dentsu Redder" oninput="renderPreview()"/></div>
+      <div class="field"><label>Tên dự án</label><input id="f-proj" type="text" placeholder="KFC Key Visual Q3 2025" oninput="renderPreview()"/></div>
+      <div class="field"><label>Loại</label>
+        <select id="f-type" onchange="renderPreview()">
+          <option>Key Visual</option><option>TVC</option><option>Social Content</option>
+          <option>Branding</option><option>Event</option><option>Mixed</option>
+        </select>
+      </div>
+      <div class="field"><label>Ngày</label><input id="f-date" type="date" oninput="renderPreview()"/></div>
+    </div>
+  </div>
+
+  <div class="main-body">
+    <div class="table-wrap" id="table-wrap">
+      <div class="table-empty" id="table-empty">
+        <div class="table-empty-icon">☰</div>
+        <div class="table-empty-text">Chọn hạng mục từ danh sách bên trái<br/>để bắt đầu tạo báo giá</div>
+      </div>
+      <div id="table-head" style="display:none">
+        <div class="table-head">
+          <span class="th">Hạng mục</span><span class="th c">Unit</span>
+          <span class="th r">Qty</span><span class="th r">Đơn giá</span><span></span>
+        </div>
+      </div>
+      <div id="table-body"></div>
+    </div>
+
+    <div class="deliverables-wrap">
+      <div class="deliverables-head">Deliverables / Sản phẩm bàn giao</div>
+      <div class="deliverables-body">
+        <textarea id="f-deliverables" placeholder="Nhập danh sách sản phẩm bàn giao... (Enter để xuống dòng)&#10;Ví dụ:&#10;- 01 TVC 30 giây, full HD&#10;- 03 Key Visual layouts" oninput="renderPreview()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-bottom">
+    <div class="bottom-adjust">
+      <div class="adj-group">
+        <label>Giảm giá</label>
+        <input class="adj-input" id="disc-val" type="number" min="0" value="0" oninput="recalc()"/>
+        <select class="adj-select" id="disc-type" onchange="recalc()"><option value="pct">%</option><option value="amount">đ</option></select>
+      </div>
+      <div class="adj-group">
+        <label>Production fee</label>
+        <input class="adj-input" id="fee-val" type="number" min="0" value="0" oninput="recalc()"/>
+        <span style="font-size:12px;color:var(--text3)">%</span>
+      </div>
+      <div class="adj-group">
+        <label>VAT</label>
+        <select class="adj-select" id="vat-rate" onchange="recalc()">
+          <option value="0">0%</option><option value="8" selected>8%</option><option value="10">10%</option>
+        </select>
+      </div>
+      <div class="sync-status">
+        <span class="sync-dot" id="sync-dot"></span>
+        <span id="sync-text">Chưa đồng bộ</span>
+      </div>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn" onclick="resetAll()">↺ Reset</button>
+      <button class="btn" onclick="printPDF()">⬇ Xuất PDF</button>
+      <button class="btn btn-green" id="sync-btn" onclick="syncToLark()">⇅ Đồng bộ Lark Base</button>
+    </div>
+  </div>
+</main>
+
+<!-- ══ PDF PREVIEW ══ -->
+<aside class="preview">
+  <div class="preview-head">
+    <span class="preview-label">PDF Preview</span>
+    <span class="live-badge">LIVE</span>
+  </div>
+  <div class="preview-body">
+    <div class="pdf-card" id="pdf-card"></div>
+  </div>
+</aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ CONFIG ══
+const LARK_CONFIG = {
+  appId: 'cli_aa9ffc6854f85e15',
+  appSecret: 'YFLhGWmmlNH8BEFQ1zsmne8mSDUNMBmL',
+  baseId: 'Prz6bGz0aaG56QsO5mUjdfeRp6c',
+  tableId: 'tblqc8tsMgGP6Job',
+  // Tên các field trong Lark Base Quotation Lines
+  fields: {
+    itemName:   'Items Name',
+    group:      'Nhóm',
+    unit:       'Unit',
+    qty:        'Quantity',
+    unitRate:   'Unit Rate',
+    total:      'Total',
+    project:    'Master Project',
+  }
+};
+
+const COMPANY = {
+  name: 'YOUR STUDIO',
+  address: '123 Nguyễn Huệ, Q.1, TP.HCM',
+  phone: '+84 xxx xxx xxxx',
+  email: 'hello@yourstudio.com',
+  website: 'www.yourstudio.com',
+};
+
+// ══ CATALOG ══
+const CATALOG = [
+  {id:'pre',name:'Pre-Production / Tiền kỳ',color:'#8B5E3C',items:[
+    {name:'Scouting / Khảo sát bối cảnh',unit:'PACK',rate:2000000},
+    {name:'Biên kịch / Treatment',unit:'PACK',rate:5000000},
+    {name:'Storyboard',unit:'PACK',rate:3000000},
+    {name:'Fitting / Buổi thử đồ',unit:'PACK',rate:2000000},
+    {name:'Voice Over / Sản xuất lời bình',unit:'PACK',rate:3000000},
+  ]},
+  {id:'crew',name:'Crew Production / Đội ngũ',color:'#534AB7',items:[
+    {name:'Producer / Nhà sản xuất',unit:'PACK',rate:10000000},
+    {name:'Line Producer / Điều phối sản xuất',unit:'PACK',rate:3000000},
+    {name:'PA / Trợ lý sản xuất',unit:'DAY',rate:2000000},
+    {name:'Director / Đạo diễn',unit:'PACK',rate:10000000},
+    {name:'1st AD / Trợ lý đạo diễn',unit:'DAY',rate:3000000},
+    {name:'DOP / Đạo diễn hình ảnh',unit:'PACK',rate:15000000},
+    {name:'DOP + Camop / Quay phim + Thiết bị',unit:'DAY',rate:18000000},
+    {name:'Focus / Chỉnh nét',unit:'DAY',rate:2500000},
+    {name:'Assistant Camera / Trợ lý quay phim',unit:'DAY',rate:1500000},
+    {name:'Sound Recording / Thu âm hiện trường',unit:'DAY',rate:4000000},
+    {name:'Art Director / Đạo diễn nghệ thuật',unit:'DAY',rate:5000000},
+    {name:'Stylist / Nhà tạo mẫu',unit:'DAY',rate:3000000},
+    {name:'Makeup & Hair',unit:'DAY',rate:3500000},
+    {name:'Photographer',unit:'DAY',rate:20000000},
+    {name:'Photo Assistant',unit:'PERSON',rate:1500000},
+    {name:'Food Stylist',unit:'PACK',rate:15000000},
+    {name:'BTS Photographer',unit:'DAY',rate:5000000},
+  ]},
+  {id:'talent',name:'Talent',color:'#1D9E75',items:[
+    {name:'Talent Manager',unit:'PACK',rate:3000000},
+    {name:'Talent (Main)',unit:'PERSON',rate:6000000},
+    {name:'Talent (Supporting)',unit:'PERSON',rate:2000000},
+    {name:'Wardrobes',unit:'LAYOUT',rate:4000000},
+    {name:'Kids Talent',unit:'PERSON',rate:3000000},
+  ]},
+  {id:'post',name:'Post Production / Hậu kỳ',color:'#D85A30',items:[
+    {name:'Digital Imaging / Retouch',unit:'LAYOUT',rate:12000000},
+    {name:'ONSET / On-set Preview',unit:'DAY',rate:3000000},
+    {name:'ADAPT SIZE / Adaptation',unit:'LAYOUT',rate:2000000},
+    {name:'3D / CGI',unit:'LAYOUT',rate:6000000},
+    {name:'Color Grading',unit:'DAY',rate:10000000},
+    {name:'Offline Edit',unit:'DAY',rate:5000000},
+    {name:'Online / Finishing',unit:'PACK',rate:8000000},
+    {name:'Motion Graphics',unit:'PACK',rate:15000000},
+    {name:'Sound Mix & Music',unit:'PACK',rate:8000000},
+    {name:'Subtitles / Captions',unit:'PACK',rate:2000000},
+  ]},
+  {id:'equip',name:'Equipment / Thiết bị',color:'#BA7517',items:[
+    {name:'Lighting & Photo Equipment',unit:'DAY',rate:5000000},
+    {name:'Camera Package',unit:'DAY',rate:8000000},
+    {name:'Cinema Camera Package',unit:'DAY',rate:15000000},
+    {name:'Drone',unit:'DAY',rate:6000000},
+    {name:'Gimbal / Stabilizer',unit:'DAY',rate:3000000},
+    {name:'Food Props',unit:'PACK',rate:8000000},
+    {name:'Props / Set Decoration',unit:'PACK',rate:3000000},
+    {name:'Generator',unit:'DAY',rate:4000000},
+  ]},
+  {id:'logistic',name:'Logistic',color:'#185FA5',items:[
+    {name:'Studio',unit:'DAY',rate:3000000},
+    {name:'Location Fee',unit:'DAY',rate:5000000},
+    {name:'Catering',unit:'DAY',rate:6000000},
+    {name:'Transport',unit:'DAY',rate:2000000},
+    {name:'Accommodation',unit:'NIGHT',rate:2000000},
+    {name:'Permit / License',unit:'PACK',rate:2000000},
+  ]},
+  {id:'extra',name:'Extra / Phát sinh',color:'#888780',items:[
+    {name:'Contingency Buffer',unit:'PACK',rate:5000000},
+    {name:'Overtime',unit:'PACK',rate:5000000},
+    {name:'Rush Delivery Fee',unit:'PACK',rate:3000000},
+  ]},
+];
+
+// ══ STATE ══
+let selected = []; // {catalogId, itemIdx, name, group, color, unit, qty, rate}
+
+const fmt = n => 'đ' + Math.round(n).toLocaleString('vi-VN');
+const fmtNum = n => Math.round(n).toLocaleString('vi-VN');
+
+// ══ SIDEBAR ══
+function renderSidebar(filter='') {
+  const el = document.getElementById('sb-list');
+  el.innerHTML = '';
+  CATALOG.forEach(cat => {
+    const filtered = cat.items.filter(it =>
+      it.name.toLowerCase().includes(filter.toLowerCase())
+    );
+    if (!filtered.length && filter) return;
+    const group = document.createElement('div');
+    group.className = 'sb-group';
+    const isOpen = !filter ? (cat._open || false) : true;
+    group.innerHTML = `
+<div class="sb-group-head" onclick="toggleGroup('${cat.id}')">
+  <span class="sb-group-name">
+    <span class="sb-dot" style="background:${cat.color}"></span>
+    ${cat.name}
+  </span>
+  <span class="sb-chev${isOpen?' open':''}" id="chev_${cat.id}">▶</span>
+</div>
+<div class="sb-items${isOpen?' open':''}" id="grp_${cat.id}">
+  ${(filter ? filtered : cat.items).map((it,ii) => {
+    const realIdx = cat.items.indexOf(it);
+    const isSel = selected.some(s => s.catalogId===cat.id && s.itemIdx===realIdx);
+    return `<div class="sb-item${isSel?' selected':''}" onclick="toggleItem('${cat.id}',${realIdx})">
+      <div class="sb-item-left">
+        <div class="sb-item-name">${it.name}</div>
+        <div class="sb-item-rate">${fmt(it.rate)} <span class="sb-item-unit">/ ${it.unit}</span></div>
+      </div>
+      <div class="sb-add-icon">${isSel?'✓':'+'}</div>
+    </div>`;
+  }).join('')}
+</div>`;
+    el.appendChild(group);
+  });
+}
+
+function toggleGroup(id) {
+  const cat = CATALOG.find(c=>c.id===id);
+  cat._open = !cat._open;
+  renderSidebar(document.getElementById('search-input').value);
+}
+
+function filterItems(val) {
+  renderSidebar(val);
+}
+
+function toggleItem(catId, itemIdx) {
+  const cat = CATALOG.find(c=>c.id===catId);
+  const it = cat.items[itemIdx];
+  const existing = selected.findIndex(s=>s.catalogId===catId&&s.itemIdx===itemIdx);
+  if (existing >= 0) {
+    selected.splice(existing, 1);
+  } else {
+    selected.push({
+      catalogId: catId, itemIdx,
+      name: it.name, group: cat.name, color: cat.color,
+      unit: it.unit, qty: 1, rate: it.rate,
+      uid: catId+'_'+itemIdx+'_'+Date.now()
+    });
+  }
+  renderSidebar(document.getElementById('search-input').value);
+  renderTable();
+  recalc();
+}
+
+// ══ TABLE ══
+function renderTable() {
+  const empty = document.getElementById('table-empty');
+  const head = document.getElementById('table-head');
+  const body = document.getElementById('table-body');
+  if (!selected.length) {
+    empty.style.display = 'flex';
+    head.style.display = 'none';
+    body.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+  head.style.display = 'block';
+  body.innerHTML = selected.map((s,i) => `
+<div class="table-row" id="row_${s.uid}">
+  <div>
+    <div class="row-name">${s.name}</div>
+    <div class="row-group"><span class="row-group-dot" style="background:${s.color}"></span>${s.group}</div>
+  </div>
+  <select class="unit-sel" onchange="updateUnit(${i},this.value)">
+    ${['DAY','PACK','PERSON','LAYOUT','HOUR','NIGHT','SET'].map(u=>`<option${u===s.unit?' selected':''}>${u}</option>`).join('')}
+  </select>
+  <input type="number" class="num-in" value="${s.qty}" min="0.5" step="0.5" onchange="updateQty(${i},this.value)" style="width:80px"/>
+  <input type="number" class="num-in" value="${s.rate}" min="0" step="500000" onchange="updateRate(${i},this.value)"/>
+  <button class="del-btn" onclick="removeItem(${i})">✕</button>
+</div>`).join('');
+}
+
+function updateQty(i,v){selected[i].qty=parseFloat(v)||1;recalc();}
+function updateRate(i,v){selected[i].rate=parseInt(v)||0;recalc();}
+function updateUnit(i,v){selected[i].unit=v;recalc();}
+function removeItem(i){
+  const s=selected[i];
+  selected.splice(i,1);
+  renderSidebar(document.getElementById('search-input').value);
+  renderTable();
+  recalc();
+}
+
+// ══ RECALC ══
+function recalc() {
+  const sub = selected.reduce((s,it)=>s+it.qty*it.rate,0);
+  const dval = parseFloat(document.getElementById('disc-val').value)||0;
+  const dtype = document.getElementById('disc-type').value;
+  const disc = dtype==='pct' ? sub*dval/100 : dval;
+  const fee = parseFloat(document.getElementById('fee-val').value)||0;
+  const feeAmt = (sub-disc)*fee/100;
+  const vat = parseInt(document.getElementById('vat-rate').value)||0;
+  const vatAmt = (sub-disc+feeAmt)*vat/100;
+  const total = sub-disc+feeAmt+vatAmt;
+  const cnt = selected.length;
+  document.getElementById('sb-total').textContent = fmt(sub);
+  document.getElementById('sb-count').textContent = cnt+' hạng mục đã chọn';
+  renderPreview(sub, disc, feeAmt, vatAmt, total);
+}
+
+// ══ PREVIEW ══
+function renderPreview(sub, disc, feeAmt, vatAmt, total) {
+  if (sub===undefined) {
+    sub = selected.reduce((s,it)=>s+it.qty*it.rate,0);
+    const dval = parseFloat(document.getElementById('disc-val').value)||0;
+    const dtype = document.getElementById('disc-type').value;
+    disc = dtype==='pct'?sub*dval/100:dval;
+    const fee = parseFloat(document.getElementById('fee-val').value)||0;
+    feeAmt = (sub-disc)*fee/100;
+    const vat = parseInt(document.getElementById('vat-rate').value)||0;
+    vatAmt = (sub-disc+feeAmt)*vat/100;
+    total = sub-disc+feeAmt+vatAmt;
+  }
+  const proj = document.getElementById('f-proj').value||'—';
+  const client = document.getElementById('f-client').value||'—';
+  const type = document.getElementById('f-type').value;
+  const date = document.getElementById('f-date').value ? new Date(document.getElementById('f-date').value).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN');
+  const deliverables = document.getElementById('f-deliverables').value;
+
+  // Group items by catalog group
+  const groups = {};
+  selected.forEach(s => {
+    if (!groups[s.group]) groups[s.group] = {color:s.color, items:[]};
+    groups[s.group].items.push(s);
+  });
+
+  let rowsHTML = '';
+  let n = 1;
+  Object.entries(groups).forEach(([grp, data]) => {
+    rowsHTML += `<tr><td colspan="5" style="padding:5px 6px 3px;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:${data.color};background:#FAFAF8;border-top:1px solid #EEE">${grp}</td></tr>`;
+    data.items.forEach(it => {
+      rowsHTML += `<tr>
+        <td class="pdf-td muted" style="width:20px">${n++}</td>
+        <td class="pdf-td">${it.name}</td>
+        <td class="pdf-td c" style="width:40px">${it.unit}</td>
+        <td class="pdf-td r" style="width:30px">${it.qty}</td>
+        <td class="pdf-td r" style="width:80px">${fmt(it.qty*it.rate)}</td>
+      </tr>`;
+    });
+  });
+
+  const delivHTML = deliverables ? `
+    <div style="margin-top:12px;padding:10px 12px;background:#FAFAF8;border-radius:6px;border:1px solid #EEE">
+      <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#999;margin-bottom:6px">Deliverables / Sản phẩm bàn giao</div>
+      <div style="font-size:10px;color:#333;line-height:1.7;white-space:pre-line">${deliverables}</div>
+    </div>` : '';
+
+  document.getElementById('pdf-card').innerHTML = `
+<div class="pdf-header">
+  <div class="pdf-co">
+    ${COMPANY.name} &nbsp;·&nbsp; ${COMPANY.address}<br/>
+    T: ${COMPANY.phone} &nbsp;·&nbsp; <a href="mailto:${COMPANY.email}">${COMPANY.email}</a>
+  </div>
+  <div class="pdf-title">QUOTATION / BẢNG BÁO GIÁ</div>
+  <div class="pdf-meta-grid">
+    <div class="pdf-meta-row">Client: <span>${client}</span></div>
+    <div class="pdf-meta-row">Type: <span>${type}</span></div>
+    <div class="pdf-meta-row">Project: <span>${proj}</span></div>
+    <div class="pdf-meta-row">Ngày: <span>${date}</span></div>
+  </div>
+</div>
+${selected.length ? `
+<table class="pdf-table">
+  <tr>
+    <th class="pdf-th" style="width:20px">#</th>
+    <th class="pdf-th">Service / Dịch vụ</th>
+    <th class="pdf-th c" style="width:40px">Mã TS</th>
+    <th class="pdf-th r" style="width:30px">Qt</th>
+    <th class="pdf-th r" style="width:80px">VND</th>
+  </tr>
+  ${rowsHTML}
+</table>
+<div class="pdf-footer">
+  <div class="pdf-sum-row"><span>Tổng</span><span class="pdf-sum-val">${fmt(sub)}</span></div>
+  ${disc>0?`<div class="pdf-sum-row"><span>Giảm giá</span><span class="pdf-sum-val">- ${fmt(disc)}</span></div>`:''}
+  ${feeAmt>0?`<div class="pdf-sum-row"><span>Production fee</span><span class="pdf-sum-val">${fmt(feeAmt)}</span></div>`:''}
+  <div class="pdf-sum-row"><span>Trước thuế</span><span class="pdf-sum-val">${fmt(sub-disc+feeAmt)}</span></div>
+  <div class="pdf-sum-row"><span>VAT ${document.getElementById('vat-rate').value}%</span><span class="pdf-sum-val">${fmt(vatAmt)}</span></div>
+  <div class="pdf-sum-row grand"><span>TỔNG SAU THUẾ</span><span class="pdf-sum-val" style="color:#E8622A">${fmt(total)}</span></div>
+</div>` : '<div style="padding:20px 0;text-align:center;color:#ccc;font-size:12px">Chưa có hạng mục nào được chọn</div>'}
+${delivHTML}
+<div class="pdf-note">
+  Báo giá có hiệu lực trong 7 ngày · Giá chưa bao gồm chi phí phát sinh ngoài phạm vi · Thanh toán: 50% trước khi sản xuất, 50% khi bàn giao
+</div>`;
+}
+
+// ══ LARK API ══
+let accessToken = null;
+let tokenExpiry = 0;
+
+async function getLarkToken() {
+  if (accessToken && Date.now() < tokenExpiry) return accessToken;
+  try {
+    const res = await fetch('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({app_id: LARK_CONFIG.appId, app_secret: LARK_CONFIG.appSecret})
+    });
+    const data = await res.json();
+    if (data.code !== 0) throw new Error(data.msg);
+    accessToken = data.tenant_access_token;
+    tokenExpiry = Date.now() + (data.expire - 60) * 1000;
+    return accessToken;
+  } catch(e) {
+    throw new Error('Không lấy được token: ' + e.message);
+  }
+}
+
+async function syncToLark() {
+  if (!selected.length) { showToast('Chưa có hạng mục nào!', 'error'); return; }
+  const proj = document.getElementById('f-proj').value;
+  if (!proj) { showToast('Vui lòng nhập tên dự án!', 'error'); return; }
+
+  setSyncStatus('syncing', 'Đang đồng bộ...');
+  document.getElementById('sync-btn').disabled = true;
+
+  try {
+    const token = await getLarkToken();
+    const records = selected.map(s => ({
+      fields: {
+        [LARK_CONFIG.fields.itemName]: s.name,
+        [LARK_CONFIG.fields.group]: s.group,
+        [LARK_CONFIG.fields.unit]: s.unit,
+        [LARK_CONFIG.fields.qty]: s.qty,
+        [LARK_CONFIG.fields.unitRate]: s.rate,
+      }
+    }));
+
+    // Batch create records
+    const batchSize = 500;
+    let created = 0;
+    for (let i = 0; i < records.length; i += batchSize) {
+      const batch = records.slice(i, i + batchSize);
+      const res = await fetch(
+        `https://open.larksuite.com/open-apis/bitable/v1/apps/${LARK_CONFIG.baseId}/tables/${LARK_CONFIG.tableId}/records/batch_create`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({records: batch})
+        }
+      );
+      const data = await res.json();
+      if (data.code !== 0) throw new Error(data.msg || 'Lỗi khi tạo records');
+      created += data.data?.records?.length || batch.length;
+    }
+
+    setSyncStatus('ok', `Đã đồng bộ ${created} hạng mục`);
+    showToast(`✓ Đã đồng bộ ${created} hạng mục vào Lark Base`, 'success');
+  } catch(e) {
+    setSyncStatus('error', 'Lỗi đồng bộ');
+    showToast('Lỗi: ' + e.message, 'error');
+    console.error(e);
+  } finally {
+    document.getElementById('sync-btn').disabled = false;
+  }
+}
+
+function setSyncStatus(state, text) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot ' + state;
+  document.getElementById('sync-text').textContent = text;
+}
+
+// ══ PRINT ══
+function printPDF() {
+  const card = document.getElementById('pdf-card').innerHTML;
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+  <title>Quotation</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet"/>
+  <style>
+  body{font-family:'DM Sans',Arial,sans-serif;margin:0;padding:32px 40px;color:#1A1916;background:#fff;font-size:12px}
+  .pdf-header{margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1A1916}
+  .pdf-co{font-size:9px;color:#999;margin-bottom:8px;line-height:1.8}
+  .pdf-co a{color:#E8622A;text-decoration:none}
+  .pdf-title{font-size:18px;font-weight:600;color:#1A1916}
+  .pdf-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+  .pdf-meta-row{font-size:10px;color:#666}
+  .pdf-meta-row span{font-weight:500;color:#1A1916}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  .pdf-th{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#999;padding:5px 6px;border-bottom:1px solid #E0E0E0;text-align:left}
+  .pdf-th.r{text-align:right}.pdf-th.c{text-align:center}
+  .pdf-td{font-size:10px;padding:5px 6px;border-bottom:1px solid #F5F5F5;color:#1A1916;vertical-align:top}
+  .pdf-td.r{text-align:right;font-family:'DM Mono',monospace}
+  .pdf-td.c{text-align:center}
+  .pdf-td.muted{color:#999}
+  .pdf-footer{margin-top:12px;border-top:1px solid #E0E0E0;padding-top:10px}
+  .pdf-sum-row{display:flex;justify-content:space-between;font-size:10px;padding:3px 0;color:#666}
+  .pdf-sum-val{font-family:'DM Mono',monospace;font-weight:500;color:#1A1916}
+  .pdf-sum-row.grand{font-size:13px;font-weight:600;color:#1A1916;border-top:1px solid #1A1916;margin-top:4px;padding-top:6px}
+  .pdf-note{font-size:9px;color:#aaa;margin-top:12px;border-top:1px dashed #E0E0E0;padding-top:8px;line-height:1.6}
+  @media print{body{padding:16px 20px}@page{margin:.8cm}}
+  </style></head><body>${card}
+  <script>setTimeout(()=>window.print(),400)<\/script></body></html>`);
+  win.document.close();
+}
+
+// ══ RESET ══
+function resetAll() {
+  if (selected.length && !confirm('Reset toàn bộ báo giá?')) return;
+  selected = [];
+  CATALOG.forEach(c=>c._open=false);
+  document.getElementById('f-proj').value='';
+  document.getElementById('f-client').value='';
+  document.getElementById('f-deliverables').value='';
+  document.getElementById('disc-val').value=0;
+  document.getElementById('fee-val').value=0;
+  setSyncStatus('','Chưa đồng bộ');
+  renderSidebar();
+  renderTable();
+  recalc();
+}
+
+// ══ TOAST ══
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(()=>t.className='toast', 3000);
+}
+
+// ══ INIT ══
+document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+renderSidebar();
+renderPreview();
+</script>
+</body>
+</html>
+EOF
