@@ -3,9 +3,14 @@
     "api/lark-token.js": {
       "memory": 128,
       "maxDuration": 10
+    },
+    "api/lark-sync.js": {
+      "memory": 128,
+      "maxDuration": 15
     }
   },
   "rewrites": [
-    { "source": "/api/lark-token", "destination": "/api/lark-token.js" }
+    { "source": "/api/lark-token", "destination": "/api/lark-token.js" },
+    { "source": "/api/lark-sync", "destination": "/api/lark-sync.js" }
   ]
 }
