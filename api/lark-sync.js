@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
 
-  const { appId, appSecret, baseId, tableId, records } = req.body;
+  const { appId, appSecret, baseId, tableId, masterProjectTableId, projectName, records } = req.body;
   if (!appId || !appSecret || !baseId || !tableId || !records?.length) {
     return res.status(400).json({ success: false, error: 'Thiếu thông tin bắt buộc' });
   }
@@ -26,24 +26,57 @@ export default async function handler(req, res) {
       return res.status(401).json({ success: false, error: 'Lỗi lấy token: ' + tokenData.msg });
     }
     const token = tokenData.tenant_access_token;
+    const headers = {
+      'Content-Type': 'application/json; charset=utf-8',
+      Authorization: 'Bearer ' + token,
+    };
 
-    // Bước 2: Lấy danh sách fields để map tên → field_id
+    // Bước 2: Lấy field IDs của bảng Quotation Lines
     const fieldsRes = await fetch(
       `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${tableId}/fields`,
-      { headers: { Authorization: 'Bearer ' + token } }
+      { headers }
     );
     const fieldsData = await fieldsRes.json();
     if (fieldsData.code !== 0) {
       return res.status(400).json({ success: false, error: 'Lỗi lấy fields: ' + fieldsData.msg });
     }
 
-    // Tạo map: tên field (lowercase, trim) → field_id
+    // Map: tên field (lowercase) → field_id
     const fieldMap = {};
     for (const f of fieldsData.data.items) {
       fieldMap[f.field_name.trim().toLowerCase()] = f.field_id;
     }
 
-    // Bước 3: Chuyển records dùng field_id thay vì tên
+    // Bước 3: Tìm record ID của project trong bảng Master Project
+    let masterProjectRecordId = null;
+    if (projectName && masterProjectTableId) {
+      const searchRes = await fetch(
+        `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${masterProjectTableId}/records/search`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            filter: {
+              conjunction: 'and',
+              conditions: [{
+                field_name: 'Project Name',
+                operator: 'is',
+                value: [projectName],
+              }],
+            },
+            page_size: 1,
+          }),
+        }
+      );
+      const searchData = await searchRes.json();
+      if (searchData.code === 0 && searchData.data?.items?.length > 0) {
+        masterProjectRecordId = searchData.data.items[0].record_id;
+      }
+    }
+
+    // Bước 4: Build records với field IDs
+    const masterProjectFieldId = fieldMap['master project'];
+
     const mappedRecords = records.map(r => {
       const newFields = {};
       for (const [name, value] of Object.entries(r.fields)) {
@@ -52,10 +85,14 @@ export default async function handler(req, res) {
           newFields[fid] = value;
         }
       }
+      // Link Master Project nếu tìm được record ID
+      if (masterProjectFieldId && masterProjectRecordId) {
+        newFields[masterProjectFieldId] = [{ record_id: masterProjectRecordId }];
+      }
       return { fields: newFields };
     });
 
-    // Bước 4: Batch create
+    // Bước 5: Batch create
     const BATCH_SIZE = 500;
     let totalCreated = 0;
 
@@ -65,10 +102,7 @@ export default async function handler(req, res) {
         `https://open.larksuite.com/open-apis/bitable/v1/apps/${baseId}/tables/${tableId}/records/batch_create`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            Authorization: 'Bearer ' + token,
-          },
+          headers,
           body: JSON.stringify({ records: batch }),
         }
       );
