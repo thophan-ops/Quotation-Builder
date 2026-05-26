@@ -256,7 +256,7 @@ const LARK_CONFIG = {
   appId: 'cli_aa9ffc6854f85e15',
   appSecret: 'YFLhGWmmlNH8BEFQ1zsmne8mSDUNMBmL',
   baseId: 'Prz6bGz0aaG56QsO5mUjdfeRp6c',
-  tableId: 'tblZsLiP9frGMFAN',   // ✅ FIX: đã cập nhật đúng tableId
+  tableId: 'tblqc8tsMgGP6Job',    // ✅ Quotation Lines table
   fields: {
     itemName: 'Items Name',
     group: 'Nhóm',
@@ -572,7 +572,6 @@ async function syncToLark() {
         [LARK_CONFIG.fields.unit]: s.unit,
         [LARK_CONFIG.fields.qty]: s.qty,
         [LARK_CONFIG.fields.unitRate]: s.rate,
-        [LARK_CONFIG.fields.project]: proj,
       }
     }));
 
